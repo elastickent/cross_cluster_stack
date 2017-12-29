@@ -1,5 +1,5 @@
 # cross_cluster_stack
-A demo two cluster Elasticsearch, Kibana and Metricbeat docker-compose with cross-cluster search.
+A demo system consisting of two one node Elasticsearch clusters. Kibana and two Metricbeats are also built with docker-compose and configured for cross-cluster search.
 
 ## Install
 After cloning the repo, cd into the directory and run:
@@ -10,7 +10,7 @@ After cloning the repo, cd into the directory and run:
 
 `docker-compose up`
 
-The provisioning and Metricbeat dashboard loading should take couple of minutes.
+The Metricbeat dashboard loading process should take couple of minutes complete.
 
 ## Check out your new clusters.
 
@@ -25,7 +25,7 @@ Password: changeme
 Navigate to the dev console and try out a cross cluster search.
 
 ```
-GET cluster_east:*,*/_search?size=0 
+GET cluster_east:*,*/_search?size=0
 {
   "aggs": {
     "total_disk": {
