@@ -1,5 +1,6 @@
 # Summary
-A demo system consisting of two one-node Elasticsearch clusters, Kibana and two Metricbeats. They are also built with docker-compose and configured for cross-cluster search.
+
+A demo system consisting of two one-node Elasticsearch clusters, Kibana and two Metricbeats. They are built using docker-compose and configured for cross-cluster search and multi-cluster monitoring.
 
 ## Install certificates
 
