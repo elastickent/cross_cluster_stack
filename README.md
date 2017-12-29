@@ -1,17 +1,19 @@
 # Summary
 A demo system consisting of two one-node Elasticsearch clusters, Kibana and two Metricbeats. They are also built with docker-compose and configured for cross-cluster search.
 
-## Install
+## Install certificates
 
 After cloning the repo, cd into the directory and run:
 
 `docker-compose -f create-certs.yml up`
 
-## Start both clusters.
+## Start up both clusters.
+
+Now run:
 
 `docker-compose up`
 
-The Metricbeat dashboard loading process should take couple of minutes complete.
+The Metricbeat dashboard loading process should take couple of minutes complete. 
 
 ## Check out your new clusters.
 
