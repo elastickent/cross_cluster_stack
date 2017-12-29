@@ -1,0 +1,30 @@
+###################### Metricbeat Configuration  #######################
+
+
+#==========================  Modules configuration ============================
+metricbeat.modules:
+
+#------------------------------- System Module -------------------------------
+- module: system
+  metricsets:
+    - cpu
+    - load
+    - socket
+    - filesystem
+    - memory
+    - network
+    - process
+  enabled: true
+  period: 10s
+  processes: ['.*']
+
+#-------------------------- Elasticsearch output ------------------------------
+output.elasticsearch:
+  # Array of hosts to connect to.
+  hosts: ["es02:9201"]
+
+  # Optional protocol and basic auth credentials.
+  protocol: "https"
+  username: "elastic"
+  password: "changeme"
+  ssl.certificate_authorities: ["/usr/share/elasticsearch/config/x-pack/certificates/ca/ca.crt"]

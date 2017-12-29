@@ -1,0 +1,80 @@
+version: '3'
+services:
+  es01:
+    container_name: es01
+    image: docker.elastic.co/elasticsearch/elasticsearch-platinum:$TAG
+    environment:
+      - node.name=es01
+      - cluster.name=central
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.ssl.certificate=$CERTS_DIR/es01/es01.crt
+      - xpack.ssl.key=$CERTS_DIR/es01/es01.key
+    volumes: ['./data/esdata_01:/usr/share/elasticsearch/data', './certs:$CERTS_DIR']
+    ports: ['9200:9200']
+    networks: ['stack']
+
+  es02:
+    container_name: es02
+    image: docker.elastic.co/elasticsearch/elasticsearch-platinum:$TAG
+    environment:
+      - node.name=es02
+      - cluster.name=east
+      - http.port=9201
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.ssl.certificate=$CERTS_DIR/es02/es02.crt
+      - xpack.ssl.key=$CERTS_DIR/es02/es02.key
+      - xpack.monitoring.exporters.example1.type=http
+      - xpack.monitoring.exporters.example1.host=https://es01:9200
+      - xpack.monitoring.exporters.example1.auth.username=elastic
+      - xpack.monitoring.exporters.example1.auth.password=changeme
+    volumes: ['./data/esdata_02:/usr/share/elasticsearch/data', './certs:$CERTS_DIR']
+    ports: ['9201:9201']
+    networks: ['stack']
+
+  kibana:
+    links: ['es01']
+    environment:
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
+      - ELASTICSEARCH_URL=https://es01:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme
+    image: docker.elastic.co/kibana/kibana:$TAG
+    ports: ['127.0.0.1:5601:5601']
+    volumes: ['./certs:$CERTS_DIR']
+    networks: ['stack']
+    depends_on: ['es01']
+
+  metricbeat_01:
+    image: docker.elastic.co/beats/metricbeat:${TAG}
+    command: metricbeat -e # -system.hostfs=/hostfs
+    networks: ['stack']
+    volumes: ['./config/metricbeat_01.yml:/usr/share/metricbeat/metricbeat.yml', './certs:$CERTS_DIR']
+    depends_on: ['es01']
+
+  metricbeat_02:
+    image: docker.elastic.co/beats/metricbeat:${TAG}
+    command: metricbeat -e # -system.hostfs=/hostfs
+    networks: ['stack']
+    volumes: ['./config/metricbeat_02.yml:/usr/share/metricbeat/metricbeat.yml', './certs:$CERTS_DIR']
+    depends_on: ['es02']
+
+  setup_metricbeat:
+    image: docker.elastic.co/beats/metricbeat:${TAG}
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    volumes: ['./scripts/setup-metricbeat.sh:/usr/local/bin/setup-metricbeat.sh:ro','./config/metricbeat_02.yml:/usr/share/metricbeat/metricbeat.yml', './certs:$CERTS_DIR']
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-metricbeat.sh | tr -d "\r" | bash']
+    networks: ['stack']
+    depends_on: ['es01', 'es02']
+
+volumes: {"esdata_01": {"driver": "local"}, "esdata_02": {"driver": "local"}}
+networks: {stack: {}}
